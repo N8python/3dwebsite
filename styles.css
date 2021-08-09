@@ -1,0 +1,26 @@
+#textBar {
+    width: 60%;
+    height: 20%;
+    position: absolute;
+    margin: 0px;
+    left: 0px;
+    top: 75%;
+    background-color: black;
+    border-radius: 5px;
+    border: 8px solid white;
+    padding: 8px;
+    z-index: 30;
+}
+
+canvas {
+    margin: 0px !important;
+}
+
+body {
+    overflow: hidden;
+}
+
+.textDisplay {
+    color: white;
+    font-family: 'Work Sans', sans-serif;
+}
