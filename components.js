@@ -345,7 +345,7 @@ const createPath = async(title, {
     path.agent = new Agent(agentAnim, agentHeader, agentMessage);
     path.agent.move(2, 0);
     path.agent.rotate(-Math.PI / 2);
-    path.agent.testModelReflection.position.z -= 0.075;
+    //path.agent.testModelReflection.position.z -= 0.075;
     path.text = makeText3d(title);
     path.text.position.set(2, 4, 0);
     path.arrow = createArrow(mainScene.arrowTexture);
@@ -353,6 +353,11 @@ const createPath = async(title, {
     path.arrow.rotation.z = -Math.PI / 2;
     path.arrow.visible = false;
     path.arrow.material.opacity = 0;
+    path.arrow.name = title;
+    if (localProxy.arrowsUnlocked.includes(path.arrow.name)) {
+        path.arrow.visible = true;
+        path.arrow.material.opacity = 1;
+    }
     path.agent.arrow = path.arrow;
     path.add(path.ground);
     path.add(path.agent.testModel);

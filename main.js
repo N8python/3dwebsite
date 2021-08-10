@@ -10,6 +10,9 @@ const insertAt = (source, target, toInsert) => {
         toInsert +
         source.slice(source.indexOf(target) + target.length);
 }
+if (!localProxy.arrowsUnlocked) {
+    localProxy.arrowsUnlocked = [];
+}
 class MainScene extends Scene3D {
     constructor() {
         super({ key: 'MainScene' })
@@ -22,6 +25,10 @@ class MainScene extends Scene3D {
     async create() {
         mainScene = this;
         this.third.warpSpeed("-sky", "-ground", '-orbitControls');
+        this.anims = {
+            idle: await (await fetch(`./idle.json`)).json(),
+            walk: await (await fetch("./walk.json")).json()
+        }
         this.player = new ExtendedObject3D();
         this.player.velocity = new THREE.Vector3();
         this.player.acceleration = new THREE.Vector3();
@@ -34,7 +41,6 @@ class MainScene extends Scene3D {
                     this.targetWeaponPositions.push({ x: -0.3, y: 0.25, z: 0.5, time: 200, progress: 0 });
                     this.targetWeaponRotations.push({ x: 0, y: 0, z: 0, time: 200, progress: 0 });
                     this.targetWeaponPositions.push({ x: 0, y: 0, z: 0, time: 200, progress: 0 });
-                    console.time();
                     const raycaster = new THREE.Raycaster();
                     raycaster.setFromCamera({ x: 0, y: 0 }, this.third.camera);
                     let minDist = 3;
@@ -88,34 +94,43 @@ class MainScene extends Scene3D {
         this.walls = [];
         this.links = [];
         this.arrowTexture = await this.third.load.texture("arrow.png");
-        const breathAnim = await this.third.load.fbx("Breathing Idle (14).fbx");
+        const model = await this.third.load.fbx("xbot.fbx");
+        /*this.third.load.fbx(`Walking (2).fbx`).then(object => {
+            console.log(JSON.stringify(object.animations[0]));
+        });*/
         const oldStuff = await createPath("Old Stuff", {
             agentHeader: "Nostalgic Agent",
             agentMessage: "Be wary, visitor - this path contains all of N8's old projects. And by old we mean bad. There's some really crappy stuff down there. Explore at your own risk. Or if you are one of N8's nonexistent OG fans, enjoy the nostalgia.",
-            agentAnim: breathAnim
+            agentAnim: model
         })
         oldStuff.position.x = 7.5;
         const coolStuff = await createPath("Cool Stuff", {
             agentHeader: "Plain Agent",
             agentMessage: "Down this path lies... well all of N8's projects that are somewhat decent but didn't fit in the other two categories. Games, applications, fun experiments. Pretty much just a miscellaneous \"good\" section.",
-            agentAnim: breathAnim
+            agentAnim: model
         })
         coolStuff.position.x = -7.5;
         coolStuff.rotation.y = Math.PI;
         const aiStuff = await createPath("AI Stuff", {
             agentHeader: "Solemn Agent",
             agentMessage: "Down this path lies an assortment of various machine learning projects - with various levels of success. Tread carefully, for this path is wrought with bugs, syntax, tears, and dialogue that takes itself too seriously.",
-            agentAnim: breathAnim
+            agentAnim: model
         })
         aiStuff.rotation.y = -Math.PI / 2;
         aiStuff.position.z = 7.5;
         const dStuff = await createPath("3D Stuff", {
             agentHeader: "Self-Deprecating Agent",
             agentMessage: "Discover a rich world of half-finished three dimensional games - with various levels of quality. Play at your own risk. No refunds. Follow this path now - 5% off your first walk!",
-            agentAnim: breathAnim
+            agentAnim: model
         })
         dStuff.rotation.y = Math.PI / 2;
         dStuff.position.z = -7.5;
+        const randomNPC = Object.keys(npcs)[Math.floor(Object.keys(npcs).length * Math.random())];
+        const randDia = npcs[randomNPC][Math.floor(npcs[randomNPC].length * Math.random())]
+        this.walker = new Walker(model, randomNPC, randDia);
+        this.third.add.existing(this.walker.testModel);
+        this.third.add.existing(this.walker.testModelReflection);
+        this.agents.push(this.walker);
         this.paths.push(oldStuff);
         this.paths.push(coolStuff);
         this.paths.push(aiStuff);
@@ -391,6 +406,21 @@ class MainScene extends Scene3D {
                 path.visible = true;
             })
         }
+        this.walker.update();
+        if (Math.abs(this.walker.x) < 12.5 && Math.abs(this.walker.z) < 12.5) {
+            const path = this.paths[Math.floor(Math.random() * this.paths.length)];
+            const xPos = 50 * Math.cos(path.rotation.y);
+            const zPos = 50 * Math.sin(path.rotation.y);
+            this.walker.x = xPos;
+            this.walker.z = zPos;
+            this.walker.xVel = -xPos / 3000;
+            this.walker.zVel = -zPos / 3000;
+            this.walker.angle = Math.atan2(xPos, zPos) + Math.PI;
+            const randomNPC = Object.keys(npcs)[Math.floor(Object.keys(npcs).length * Math.random())];
+            const randDia = npcs[randomNPC][Math.floor(npcs[randomNPC].length * Math.random())]
+            this.walker.name = randomNPC;
+            this.walker.message = randDia;
+        }
         const raycaster = new THREE.Raycaster()
             // x and y are normalized device coordinates from -1 to +1
         if (this.keys.w.isDown || this.keys.s.isDown || this.keys.a.isDown || this.keys.d.isDown) {
@@ -562,6 +592,9 @@ const displayText = async(header, text, meshToVisible) => {
         textPriority.innerHTML = text.slice(0, i);
         if (textPriority.innerHTML.endsWith("(Ent")) {
             if (meshToVisible) {
+                if (!localProxy.arrowsUnlocked.includes(meshToVisible.name)) {
+                    localProxy.arrowsUnlocked = localProxy.arrowsUnlocked.concat(meshToVisible.name);
+                }
                 meshToVisible.visible = true;
                 let visibleInterval = setInterval(() => {
                     if (meshToVisible.material.opacity >= 1) {

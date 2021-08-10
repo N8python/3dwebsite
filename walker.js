@@ -1,7 +1,18 @@
-class Agent {
-    constructor(object, name, message) {
+class Walker {
+    constructor(object, name, message, {
+        xVel = 0,
+        zVel = 0,
+        x = 0,
+        z = 0,
+        angle = 0
+    } = {}) {
         this.name = name;
         this.message = message;
+        this.xVel = xVel;
+        this.zVel = zVel;
+        this.x = x;
+        this.z = z;
+        this.angle = angle;
         this.testModel = new ExtendedObject3D();
         this.testModel.add(THREE.SkeletonUtils.clone(object));
         mainScene.third.animationMixers.add(this.testModel.animation.mixer)
@@ -40,10 +51,14 @@ class Agent {
         this.testModelReflection.add(THREE.SkeletonUtils.clone(object));
         this.testModelReflection.position.y = -0.5;
         this.testModelReflection.scale.set(0.01, 0.01, 0.01);
-        this.testModelReflection.applyMatrix(new THREE.Matrix4().makeScale(1, -1, 1));
         //this.testModelReflection.rotation.z = Math.PI;
+        //this.testModelReflection.rotation.x = 0;
+        this.testModelReflection.applyMatrix4(new THREE.Matrix4().makeScale(1, -1, 1));
+        //this.testModelReflection.applyMatrix(new THREE.Matrix4().makeScale(0, 1, 1));
+        //this.testModelReflection.scale.z = -1;
+        //this.testModelReflection.rotation.y = Math.PI;
         mainScene.third.animationMixers.add(this.testModelReflection.animation.mixer);
-        const animsToLoad = ["idle"];
+        const animsToLoad = ["walk"];
         for (const anim of animsToLoad) {
             const animText = mainScene.anims[anim];
             const animJson = animText;
@@ -52,10 +67,8 @@ class Agent {
             this.testModel.animation.add(anim, clip);
             this.testModelReflection.animation.add(anim, clip);
         }
-        this.testModel.animation.play('idle');
-        this.testModelReflection.animation.play('idle');
-        //this.testModelReflection.position.y = 0.5;
-        //this.testModelReflection.scale.set(0.01, 0.01, 0.01);
+        this.testModel.animation.play('walk');
+        this.testModelReflection.animation.play('walk');
         this.testModelReflection.traverse(child => {
             if (child.isMesh) {
 
@@ -72,6 +85,16 @@ class Agent {
                 }
             }
         })
+    }
+    update() {
+        this.testModel.position.x = this.x;
+        this.testModel.position.z = this.z;
+        this.testModelReflection.position.x = this.x;
+        this.testModelReflection.position.z = this.z;
+        this.x += this.xVel * mainScene.timeScale;
+        this.z += this.zVel * mainScene.timeScale;
+        this.testModel.rotation.y = this.angle;
+        this.testModelReflection.rotation.y = this.angle;
     }
     move(x, z) {
         this.testModel.position.x = x;
