@@ -1,5 +1,6 @@
 let mainScene;
 const easeInOut = x => x < .5 ? 2 * x * x : -1 + (4 - 2 * x) * x;
+const simplexNoise = new SimplexNoise();
 
 function angleDifference(angle1, angle2) {
     const diff = ((angle2 - angle1 + Math.PI) % (Math.PI * 2)) - Math.PI;
@@ -296,13 +297,36 @@ class MainScene extends Scene3D {
         this.walls.forEach(wall => {
             wall.renderOrder = 1;
         });
-        /*const testPlane = await makeWebsiteWindow("AI", {
-            title: "Cat Creator",
-            image: "catCreator.png",
-            description: "A convolutional autoencoder trained on cats... sliders to modify the latent space... you can make tons of CUSTOM CATS! Use the sliders in this app to create any cat you could possibly *imagine! *if that cats that you imagine are all 64x64 pixels and very blurry."
-        });
-        testPlane.position.y = 2;
-        this.third.add.existing(testPlane);*/
+        const crowTexture = await this.third.load.texture("crow.png");
+        crowTexture.repeat.setX(0.2);
+        const crowAlpha = await this.third.load.texture("crowMask.png");
+        crowAlpha.repeat.setX(0.2);
+        this.crowTexture = crowTexture;
+        this.crowAlpha = crowAlpha;
+        const offsets = [0, 0.2, 0.4, 0.6]
+        let i = 0;
+        const crowMat = new THREE.SpriteMaterial({ map: crowTexture, alphaMap: crowAlpha, side: THREE.DoubleSide, transparent: true, color: 0xaaaaaa });
+        //console.log(crowTexture);
+        this.crows = [];
+        for (let i = 0; i < 24 * 4; i++) {
+            const crow = makeCrow(crowMat);
+            crow.position.y = Math.random() * 5 + 5;
+            const angle = Math.random() * Math.PI * 2;
+            const magnitude = (6 + 4 * Math.random() - (crow.position.y - 5)) * 2;
+            crow.position.x = Math.cos(angle) * magnitude;
+            crow.position.z = Math.sin(angle) * magnitude;
+            crow.rotation.y = Math.random() * Math.PI * 2;
+            crow.noisePart = Math.random() * 100000;
+            this.crows.push(crow);
+        }
+        setInterval(() => {
+            crowTexture.offset.setX(offsets[i % offsets.length]);
+            crowAlpha.offset.setX(offsets[i % offsets.length]);
+            i++;
+        }, 100);
+        this.crows.forEach(crow => {
+            this.third.add.existing(crow);
+        })
         this.third.renderer.setPixelRatio(2);
         this.third.renderer.transparency = THREE.OrderIndependentTransperancy;
         this.third.scene.background = new THREE.Color(0);
@@ -407,6 +431,13 @@ class MainScene extends Scene3D {
             })
         }
         this.walker.update();
+        this.crows.forEach(crow => {
+            crow.position.x += 0.01 * Math.sin(crow.rotation.y);
+            crow.position.z += 0.01 * Math.cos(crow.rotation.y);
+            crow.rotation.y += (0.01 * simplexNoise.noise2D(0, crow.noisePart) - 0.005);
+            crow.noisePart += 0.01;
+            crow.renderOrder = 100000 - Math.round(crow.position.distanceTo(this.player.position) * 1000);
+        })
         if (Math.abs(this.walker.x) < 12.5 && Math.abs(this.walker.z) < 12.5) {
             const path = this.paths[Math.floor(Math.random() * this.paths.length)];
             const xPos = 50 * Math.cos(path.rotation.y);

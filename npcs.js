@@ -50,7 +50,7 @@ const npcs = {
         "The world is slowly being destroyed by the elite. If we had more love or something... everything would magically be fixed.",
         "Every phone is like a slice of cheese: it has lots of holes but can still be eaten."
     ],
-    "3d Graphics Agent": [
+    "3D Graphics Agent": [
         "Doesn't that fragment shader make you smile?",
         "Our reflections... aren't actually reflections.",
         "Bloom, my friend. BLOOOOOOOOOM.",

@@ -256,6 +256,12 @@ function wrapStr(str, options) {
 function identity(str) {
     return str;
 }
+const makeCrow = (crowMat) => {
+    const crowPlane = new THREE.Sprite(crowMat);
+    crowPlane.scale.x = 1.3;
+    crowPlane.renderOrder = 1001 + Math.floor(Math.random() * 10000);
+    return crowPlane;
+}
 const makeWebsiteWindow = async(parentDir, {
     title,
     image,
