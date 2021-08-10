@@ -301,15 +301,23 @@ class MainScene extends Scene3D {
         crowTexture.repeat.setX(0.2);
         const crowAlpha = await this.third.load.texture("crowMask.png");
         crowAlpha.repeat.setX(0.2);
+        const toucanTexture = await this.third.load.texture("toucan.png");
+        toucanTexture.repeat.setX(0.25);
+        const toucanAlpha = await this.third.load.texture("toucanMask.png");
+        toucanAlpha.repeat.setX(0.25);
         this.crowTexture = crowTexture;
         this.crowAlpha = crowAlpha;
-        const offsets = [0, 0.2, 0.4, 0.6]
+        this.toucanTexture = toucanTexture;
+        this.toucanAlpha = toucanAlpha;
+        const crowOffsets = [0, 0.2, 0.4, 0.6];
+        const toucanOffsets = [0, 0.25, 0.5, 0.75];
         let i = 0;
         const crowMat = new THREE.SpriteMaterial({ map: crowTexture, alphaMap: crowAlpha, side: THREE.DoubleSide, transparent: true, color: 0xaaaaaa });
+        const toucanMat = new THREE.SpriteMaterial({ map: toucanTexture, alphaMap: toucanAlpha, side: THREE.DoubleSide, transparent: true, color: 0xaaaaaa });
         //console.log(crowTexture);
         this.crows = [];
         for (let i = 0; i < 24 * 4; i++) {
-            const crow = makeCrow(crowMat);
+            const crow = makeCrow(Math.random() > 0.5 ? toucanMat : crowMat);
             crow.position.y = Math.random() * 5 + 5;
             const angle = Math.random() * Math.PI * 2;
             const magnitude = (6 + 4 * Math.random() - (crow.position.y - 5)) * 2;
@@ -320,8 +328,10 @@ class MainScene extends Scene3D {
             this.crows.push(crow);
         }
         setInterval(() => {
-            crowTexture.offset.setX(offsets[i % offsets.length]);
-            crowAlpha.offset.setX(offsets[i % offsets.length]);
+            crowTexture.offset.setX(crowOffsets[i % crowOffsets.length]);
+            crowAlpha.offset.setX(crowOffsets[i % crowOffsets.length]);
+            toucanTexture.offset.setX(toucanOffsets[i % toucanOffsets.length]);
+            toucanAlpha.offset.setX(toucanOffsets[i % toucanOffsets.length]);
             i++;
         }, 100);
         this.crows.forEach(crow => {
