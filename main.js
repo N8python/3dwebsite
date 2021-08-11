@@ -410,7 +410,7 @@ class MainScene extends Scene3D {
         };
         this.raycaster = new THREE.Raycaster();
         if (!localStorage._nw__controls) {
-            displayText("Controls & Navigation", "Click to lock the pointer and use the mouse to look around. WASD to move, space to jump. Click to use your torch. Interact with the humanoid figures to explore the website. Standard FPS controls. Have fun!")
+            displayText("Controls & Navigation", "Click to lock the pointer and use the mouse to look around. WASD to move, space to jump. Click to use your torch. Interact with the humanoid figures to explore the website. Standard FPS controls. Press P for fast graphics and O for good graphics. Have fun!")
             localStorage._nw__controls = "true";
         }
         this.initiated = true;
@@ -698,7 +698,14 @@ const config = {
     scene: [MainScene],
     ...Canvas()
 }
-
+document.onkeydown = (e) => {
+    if (e.key.toLowerCase() === "p") {
+        mainScene.third.renderer.setPixelRatio(1);
+    }
+    if (e.key.toLowerCase() === "o") {
+        mainScene.third.renderer.setPixelRatio(2);
+    }
+}
 window.addEventListener('load', () => {
     enable3d(() => new Phaser.Game(config)).withPhysics('./lib')
 })
