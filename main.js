@@ -88,12 +88,48 @@ class MainScene extends Scene3D {
         this.events.on('update', () => {
             this.firstPersonControls.update(0, 0);
         });
-        this.ground = makeBox(10, 1, 10);
-        this.third.add.existing(this.ground);
         this.paths = [];
         this.agents = [];
         this.walls = [];
         this.links = [];
+        this.ground = makeBox(10, 1, 10);
+        this.third.add.existing(this.ground);
+        const buttonTextures = [
+            { tex: await this.third.load.texture("logos/youtube.png"), link: "https://www.youtube.com/channel/UCbiD7KqDgRN0rX0yU3J0PLw" },
+            { tex: await this.third.load.texture("logos/github.png"), link: "https://github.com/N8python" },
+            { tex: await this.third.load.texture("logos/devto.png"), link: "https://dev.to/dashboard" },
+            { tex: await this.third.load.texture("logos/n8.png"), link: "https://n8python.github.io/" }
+        ];
+        this.alphas = [];
+        for (let i = 0; i < 4; i++) {
+            const box = makeBox(1, 1.5, 1);
+            const angle = (i) * (Math.PI / 2) + Math.PI / 4;
+            box.position.x = Math.sin(angle) * 5;
+            box.position.z = Math.cos(angle) * 5;
+            box.position.y = 1.25;
+            box.rotation.y = -angle;
+            box.renderOrder = 100;
+            this.alphas.push(box);
+            box.castShadow = true;
+            if (buttonTextures[i]) {
+                const buttonMat = new THREE.MeshBasicMaterial({ map: buttonTextures[i].tex, transparent: true, side: THREE.DoubleSide })
+                const planeButton = new THREE.PlaneGeometry(1, 1);
+                const planeMesh = new THREE.Mesh(planeButton, buttonMat);
+                planeMesh.rotation.y = -Math.PI / 2;
+                if (i % 2 === 0) {
+                    planeMesh.position.x = -0.51;
+                } else {
+                    planeMesh.position.x = 0.51;
+                    //planeMesh.rotation.z = Math.PI;
+                }
+                planeMesh.renderOrder = 101;
+                this.alphas.push(planeMesh);
+                box.add(planeMesh);
+                box.link = buttonTextures[i].link;
+                this.links.push(box);
+            }
+            this.ground.add(box);
+        }
         this.arrowTexture = await this.third.load.texture("arrow.png");
         const model = await this.third.load.fbx("xbot.fbx");
         /*this.third.load.fbx(`Walking (2).fbx`).then(object => {
